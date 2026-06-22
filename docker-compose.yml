@@ -1,0 +1,59 @@
+version: '3.8'
+
+services:
+  # 1. База данных PostgreSQL
+  postgres-db:
+    image: postgres:15-alpine
+    container_name: metrics-postgres
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_DB=metrics_db
+      - POSTGRES_USER=metrics_user
+      - POSTGRES_PASSWORD=metrics_pass
+      - TZ=UTC
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck: # Проверяем, готова ли БД принимать подключения
+      test: ["CMD-SHELL", "pg_isready -U metrics_user -d metrics_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # 2. Распределенный кэш Redis для Rate Limiter
+  redis-cache:
+    image: redis:7-alpine
+    container_name: metrics-redis
+    ports:
+      - "6379:6379"
+    healthcheck: # Проверяем, готов ли Redis отвечать на команды
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # 3. Наш бэкенд сервис
+  metrics-service:
+    build: .
+    container_name: metrics-backend
+    ports:
+      - "8080:8080"
+    environment:
+      # Переопределяем настройки подключения для докер-сети (вместо localhost используем имена сервисов)
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres-db:5432/metrics_db
+      - SPRING_DATASOURCE_USERNAME=metrics_user
+      - SPRING_DATASOURCE_PASSWORD=metrics_pass
+      - SPRING_DATA_REDIS_HOST=redis-cache
+      - SPRING_DATA_REDIS_PORT=6379
+      # Настройки безопасности и лимитов
+      - APP_JWT_SECRET=g6D6l7VYzgcHgpu/fb/wW0MFMOOpQLFgblbhzP5N9rg=
+      - APP_RATE_LIMIT_GLOBAL_CAPACITY=1000
+      - APP_RATE_LIMIT_CLIENT_CAPACITY=10
+    depends_on:
+      postgres-db:
+        condition: service_healthy # Ждем полной готовности Postgres
+      redis-cache:
+        condition: service_healthy # Ждем полной готовности Redis
+
+volumes:
+  pgdata:
