@@ -53,7 +53,7 @@ Spring Boot 4.0.x (Spring Security 7, Spring Data JPA)
 
 7. Инструкция по сборке и запуску
 
-Для запуска всего комплекса (бэкенд, PostgreSQL, Redis) на локальном компьютере необходим только установленный Docker Desktop.
+Для запуска всего проекта (metricsService, PostgreSQL, Redis) на компьютере должен быть установленный Docker Desktop.
 
 В корневом каталоге проекта (рядом с `pom.xml` и `docker-compose.yml`) выполните команду:
 docker compose up --build -d
