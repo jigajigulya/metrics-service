@@ -60,11 +60,11 @@ docker compose up --build -d
 
 
 
-Просмотр логов бэкенда:
-Убедиться, что Spring Boot успешно запустился и Tomcat готов принимать трафик, можно командой:
+Просмотр логов:
+Убедиться, что Spring boot metrics-service запустился, можно командой:
 
 docker logs metrics-backend --tail 50 -f
-Постучать в redisЖ
+Постучать в redis
 docker exec -it metrics-redis redis-cli
 keys * - запросить ключи
 Постучать в Postgres
