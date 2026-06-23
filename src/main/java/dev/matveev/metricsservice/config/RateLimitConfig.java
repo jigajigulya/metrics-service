@@ -13,6 +13,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
 
+import java.util.Objects;
+
 @Configuration
 @RequiredArgsConstructor
 public class RateLimitConfig {
@@ -21,7 +23,7 @@ public class RateLimitConfig {
     @Bean
     public ProxyManager<String> lettuceProxyManager(LettuceConnectionFactory connectionFactory) {
         RedisClient redisClient = (RedisClient) connectionFactory.getNativeClient();
-        StatefulRedisConnection<String, byte[]> connection = redisClient.connect(
+        StatefulRedisConnection<String, byte[]> connection = Objects.requireNonNull(redisClient).connect(
                 RedisCodec.of(StringCodec.UTF8, ByteArrayCodec.INSTANCE)
         );
         return Bucket4jLettuce.casBasedBuilder(connection)

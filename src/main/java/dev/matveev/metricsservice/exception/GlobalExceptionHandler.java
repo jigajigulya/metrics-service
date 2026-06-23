@@ -37,4 +37,15 @@ public class GlobalExceptionHandler {
         );
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
     }
+
+    @ExceptionHandler(org.springframework.http.converter.HttpMessageNotReadableException.class)
+    public ResponseEntity<Map<String, String>> handleMalformedJson(org.springframework.http.converter.HttpMessageNotReadableException ex) {
+        Map<String, String> response = Map.of(
+                "error", "Bad Request",
+                "message", "Malformed JSON request body. Please check your syntax."
+        );
+        return ResponseEntity.badRequest().body(response);
+    }
+
+
 }

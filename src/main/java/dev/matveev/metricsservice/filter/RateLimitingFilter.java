@@ -48,7 +48,7 @@ public class RateLimitingFilter extends OncePerRequestFilter {
                 );
 
                 objectMapper.writeValue(response.getWriter(), errorResponse);
-                return; // Прерываем цепочку фильтров, контроллер не вызовется
+                return;
             }
         }
 

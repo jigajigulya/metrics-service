@@ -14,13 +14,13 @@ services:
       - TZ=UTC
     volumes:
       - pgdata:/var/lib/postgresql/data
-    healthcheck: # Проверяем, готова ли БД принимать подключения
+    healthcheck: # проверка бд
       test: ["CMD-SHELL", "pg_isready -U metrics_user -d metrics_db"]
       interval: 5s
       timeout: 5s
       retries: 5
 
-  # 2. Распределенный кэш Redis для Rate Limiter
+  # 2. Redis
   redis-cache:
     image: redis:7-alpine
     container_name: metrics-redis
@@ -32,7 +32,7 @@ services:
       timeout: 5s
       retries: 5
 
-  # 3. Наш бэкенд сервис
+  # 3. Бэк
   metrics-service:
     build: .
     container_name: metrics-backend
@@ -45,15 +45,14 @@ services:
       - SPRING_DATASOURCE_PASSWORD=metrics_pass
       - SPRING_DATA_REDIS_HOST=redis-cache
       - SPRING_DATA_REDIS_PORT=6379
-      # Настройки безопасности и лимитов
       - APP_JWT_SECRET=g6D6l7VYzgcHgpu/fb/wW0MFMOOpQLFgblbhzP5N9rg=
       - APP_RATE_LIMIT_GLOBAL_CAPACITY=1000
       - APP_RATE_LIMIT_CLIENT_CAPACITY=10
     depends_on:
       postgres-db:
-        condition: service_healthy # Ждем полной готовности Postgres
+        condition: service_healthy
       redis-cache:
-        condition: service_healthy # Ждем полной готовности Redis
+        condition: service_healthy
 
 volumes:
   pgdata:
